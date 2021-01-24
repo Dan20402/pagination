@@ -1,31 +1,47 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable no-console */
+/* eslint-disable no-undef */
+/* eslint-disable linebreak-style */
 const fetch = require('node-fetch');
+const buildUrl = require('build-url');
 
-//This the specific deputado's id.
-const id = 141439;
-
-//Despesas endpoint .... got it from here if you are interested. https://dadosabertos.camara.leg.br/swagger/api.html
-let url = `https://dadosabertos.camara.leg.br/api/v2/deputados/${id}/despesas?ordem=ASC&ordenarPor=ano`;
-
-const getDespesas = async function () {
-  const response = await fetch(url);
-  const data = await response.json();
-  console.log(`Total count: ${response.headers.get('x-total-count')}`);
-  return data;
+const DEPUTADO_ID = 141439;
+const ITEMS_PERPAGE = 10;
+const getDespesas = async (itemsPerPage, pageNumber, deputadoId) => {
+    const url = buildUrl('https://dadosabertos.camara.leg.br', {
+        path: `/api/v2/deputados/${deputadoId}/despesas`,
+        queryParams: {
+        ordem: 'ASC',
+            ordenarPor: 'ano',
+            itens: itemsPerPage,
+        pagina: pageNumber,
+        },
+    });
+    
+    console.log(url);
+    
+    const response = await fetch(url);
+    const paginatedExpense = await response.json();
+    const totalCount = response.headers.get('x-total-count');
+    console.log(`Total count: ${totalCount}`);
+    return { paginatedExpense, totalCount };
 };
 
-getDespesas().then((data) => {
-  const dados = data.dados;
-  const links = data.links;
-  //console.log(links);
+const main = async () => {
+ let allExpenses = [];
+    const response = await getDespesas(0, itemsPerPage, DEPUTADO_ID);
+   
+    const numberOfPages = Math.floor(totalCount / itemsPerPage);
+    const dados = response.paginatedExpense.dados;
+    allExpenses.push(dados);
 
-  /*  The block below groups the links array by 'self', 'next', 'first', 'last'. */
-  const key = 'rel';
-  const filtrado = links.reduce((result, current) => {
-    if (!result[current[key]]) {
-      result[current[key]] = [];
+    for (let currentPage = 1; currentPage < numberOfPages; currentPage++){
+        const response = await getDespesas(currentPage, itemsPerPage, DEPUTADO_ID);
+     const dados = response.paginatedExpense.dados;
+    allExpenses.push(dados);
     }
-    result[current[key]].push(current);
-    return result;
-  }, {});
-  //console.log(filtrado);
-});
+  const { links } = expenses;
+  console.log(links);
+
+main();
+
