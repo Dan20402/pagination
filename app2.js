@@ -34,13 +34,15 @@ const getNextDespesas = async (url) => {
 
 const iterateResponse = async (response, allResponses) => {
     if (!response.nextLink) {
-        console.log('EEEEEEEEEEEEEEEEND');
-        console.log(allResponses);
         return allResponses;
     }
 
     const nextResponse = await getNextDespesas(response.nextLink);
-    return iterateResponse(nextResponse, allResponses?.concat(nextResponse.paginatedExpense.dados));
+    const iteratedResponse = await iterateResponse(
+        nextResponse,
+        allResponses?.concat(nextResponse.paginatedExpense.dados),
+    );
+    return iteratedResponse;
 };
 
 const main = async () => {
