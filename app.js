@@ -36,10 +36,12 @@ const main = async () => {
     const { dados } = response.paginatedExpense;
     allExpenses.push(dados);
     console.log(numberOfPages);
-    for (let currentPage = 2; currentPage <= numberOfPages; currentPage++) {
-        const nextResponse = await getDespesas(ITEMS_PER_PAGE, currentPage, DEPUTADO_ID);
-        const nextDados = nextResponse.paginatedExpense.dados;
-        allExpenses.push(nextDados);
+    if (numberOfPages > 1) {
+        for (let currentPage = 2; currentPage <= numberOfPages; currentPage++) {
+            const nextResponse = await getDespesas(ITEMS_PER_PAGE, currentPage, DEPUTADO_ID);
+            const nextDados = nextResponse.paginatedExpense.dados;
+            allExpenses.push(nextDados);
+        }
     }
     console.log(allExpenses);
 };
